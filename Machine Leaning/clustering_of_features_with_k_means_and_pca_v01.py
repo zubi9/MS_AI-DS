@@ -68,13 +68,28 @@ pcas = pca.fit_transform(X_scaled)
 # Create a DataFrame with the principal components
 pc_df = pd.DataFrame(data=pcas, columns=['PC1', 'PC2'])
 
+# select Highest score Number
+
+from sklearn.metrics import silhouette_score
+
+silhouette_scores = []
+for k in range(2, 11):
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    labels = kmeans.fit_predict(X)
+    silhouette_scores.append(silhouette_score(X, labels))
+
+plt.plot(range(2, 11), silhouette_scores, marker='o')
+plt.xlabel('Number of Clusters')
+plt.ylabel('Silhouette Score')
+plt.title('Silhouette Score for Optimal k')
+plt.grid(True)
+plt.show()
+
 # Cluster the data using K-Means
-# how to decide boute no of clusters? Methods are explained below
+# how to decide aboute No of clusters? Methods are explained above
 n_clusters = 3  # Adjust the number of clusters based on your data
 kmeans = KMeans(n_clusters=n_clusters, random_state=0)
 df['Cluster'] = kmeans.fit_predict(X_scaled)
-
-
 
 """### Longer but more informative"""
 
@@ -88,12 +103,12 @@ for cluster in range(n_clusters):
                 pc_df.loc[cluster_indices, 'PC2'],
                 label=f'Cluster {clusters[cluster]}', alpha=0.7, c =col[clusters[cluster]] ) #remove cmap and set your cols
 
-pc1_value = pc_df.loc[311, 'PC1']
-pc2_value = pc_df.loc[311, 'PC2']
-plt.scatter(pc1_value, pc2_value, c = 'k')
-pc1_value2 = pc_df.loc[502, 'PC1']
-pc2_value2 = pc_df.loc[502, 'PC2'] # added a small value to make it visible
-plt.scatter(pc1_value2, pc2_value2, c = 'b')
+# pc1_value = pc_df.loc[311, 'PC1']
+# pc2_value = pc_df.loc[311, 'PC2']
+# plt.scatter(pc1_value, pc2_value, c = 'k')
+# pc1_value2 = pc_df.loc[502, 'PC1']
+# pc2_value2 = pc_df.loc[502, 'PC2'] # added a small value to make it visible
+# plt.scatter(pc1_value2, pc2_value2, c = 'b')
 plt.title('2D PCA with K-Means Clustering')
 plt.xlabel('Principal Component 1')
 plt.ylabel('Principal Component 2')
@@ -102,15 +117,15 @@ plt.show()
 
 """### Simplest ways to plot clusters"""
 
-plt.figure(figsize=(10, 5))
-plt.scatter(pcas[:, 0], pcas[:, 1], c = df['Cluster'], cmap = 'plasma')
+# plt.figure(figsize=(10, 5))
+# plt.scatter(pcas[:, 0], pcas[:, 1], c = df['Cluster'], cmap = 'plasma')
 
-plt.scatter(pcas[311, 0], pcas[311, 1], c = 'k')
-plt.scatter(pcas[502, 0], pcas[502, 1], c = 'r')
+# # plt.scatter(pcas[311, 0], pcas[311, 1], c = 'k')
+# # plt.scatter(pcas[502, 0], pcas[502, 1], c = 'r')
 
-plt.xlabel("First PC")
-plt.ylabel("Second PC")
-plt.show()
+# plt.xlabel("First PC")
+# plt.ylabel("Second PC")
+# plt.show()
 
 import numpy as np
 random_index1 = 161
@@ -131,9 +146,9 @@ print(f"The Euclidean distance between indexe {random_index1} and {random_index2
 # euclidean_distance = np.linalg.norm(cls - pc_161)
 # euclidean_distance
 
-pc_df.iloc[random_index1]
+pc_df.iloc[random_index1] # first significent PCA is PC1 and second significent PCA is PC2
 
-pc_df.iloc[random_index2]
+pc_df.iloc[random_index2]   # first sidnificent PCA is PC1 and second significent PCA is PC2
 
 # Extract PCA components for randomly selected indexes
 pc_pred1 = X_scaled[random_index1]
@@ -173,6 +188,7 @@ plt.plot(range(1, 11), inertias, marker='o')
 plt.xlabel('Number of Clusters')
 plt.ylabel('Inertia')
 plt.title('Elbow Method for Optimal k')
+plt.grid(True)
 plt.show()
 
 """**2. Silhouette Score:**
@@ -197,6 +213,7 @@ plt.plot(range(2, 11), silhouette_scores, marker='o')
 plt.xlabel('Number of Clusters')
 plt.ylabel('Silhouette Score')
 plt.title('Silhouette Score for Optimal k')
+plt.grid(True)
 plt.show()
 
 
@@ -246,12 +263,12 @@ for cluster in range(n_clusters):
                 pc_df0.loc[cluster_indices, 'PC2'],
                 label=f'Cluster {cluster + 1}', alpha=0.7,cmap='plasma') #c =col[cluster -1] ) #remove cmap and set your cols
 
-pc1_value = pc_df0.loc[161, 'PC1']
-pc2_value = pc_df0.loc[161, 'PC2']
-plt.scatter(pc1_value, pc2_value, c = 'k')
-pc1_value2 = pc_df0.loc[237, 'PC1']
-pc2_value2 = pc_df0.loc[237, 'PC2'] # added a small value to make it visible
-plt.scatter(pc1_value2, pc2_value2, c = 'r')
+# pc1_value = pc_df0.loc[161, 'PC1']
+# pc2_value = pc_df0.loc[161, 'PC2']
+# plt.scatter(pc1_value, pc2_value, c = 'k')
+# pc1_value2 = pc_df0.loc[237, 'PC1']
+# pc2_value2 = pc_df0.loc[237, 'PC2'] # added a small value to make it visible
+# plt.scatter(pc1_value2, pc2_value2, c = 'r')
 plt.title('2D PCA with K-Means Clustering')
 plt.xlabel('Principal Component 1')
 plt.ylabel('Principal Component 2')
