@@ -1,0 +1,183 @@
+order and company names
+from "Orders" as o
+load o.Company as c
+select {
+    //There are three ways to laod company names.
+    CompanyName: load(o.Company).Name,
+    name: c.Name,
+    OrderDetails: o.CompanyName
+}
+
+How many orders contains product Tofu?
+from Orders 
+group by Lines[].ProductName
+where Lines[].ProductName == 'Tofu'
+select count(), Lines[].ProductName
+
+
+update team Abbreviation
+from "Mlb_players"  as p
+where search(Team, "STL")
+update {
+    p.Team = "Cardinals";
+}
+
+Which team has the heaviest players (team weight average)?
+from "Mlb_players" as p
+group by Team
+order by Team desc
+select {
+    TeamName: p.Team,
+    Counts: count(),
+    Total: sum(i=>p.Body),
+    Average: sum(i=>p.Body) / count()
+}
+limit  1
+------------------------------------
+total products quantities and amount
+
+// map 
+from o in docs.Orders
+from l in o.Lines
+select new
+{
+    l.Product,
+    l.Quantity,
+    Total = (l.Quantity * l.PricePerUnit) * (1 - l.Discount)
+}
+
+
+// reduce
+from r in results
+group r by r.Product into g
+select new
+{
+    Product = g.Key,
+    Quantity = g.Sum(x => x.Quantity),
+    Total = g.Sum(x => x.Total)
+}
+
+
+
+MapReduce
+from index "mapreduce" as mr
+order by mr.Total as double desc
+select {
+    ProductID: load(mr.Product).Supplier
+    avg: mr.Total/mr.Quantity
+}
+----------------------------------------------
+Anyone has queries for teams update and finding team will tallest players of MLB database in RavenDB.
+
+map:
+from m in docs.Mlbs
+select new
+{
+    m.Team,
+    Count = 1,
+    Total = m.BodyWeight,
+    avg = 0
+}
+Reduce:
+from r in results
+group r by r.Team into g
+let count = g.Sum(x => x.Count)
+let total = g.Sum(x => x.Total)
+select new
+{
+    Team = g.Key,
+    Total = total,
+    Count = count,
+    avg = total/count
+}
+-----------------------------------------------
+from i in docs.Orders
+
+from l in i.Lines
+
+select new
+{
+    ProductName = l.ProductName,
+    Price = l.Quantity * l.PricePerUnit,
+}
+
+from r in results
+group r by r.ProductName into g
+let price = g.Sum(x => x.Price)
+select new
+{
+    ProductName = g.Key,
+    Price=price
+}
+
+product by their suplier name Or:
+
+map("Products", (product) => {
+    let sup = load(product.Supplier,"Suppliers")
+return {
+ Name:sup.Name
+}
+})
+
+Create index that will allow to search products by the name of their category.
+(For example the index for query:  
+from index '...' where CatName == 'Beverages')
+
+INDEX Product/ByCategoryName
+
+
+map("products", (product) => {
+    let category = load(product.Category, 'Categories')
+    return {
+        CategoryName: category.Name
+    };
+    
+})
+
+
+from index 'Product/ByCategoryName'  where CategoryName == 'Beverages'
+------------------------------------------------------------
+
+SQL
+===========
+select sum(fis.SalesAmount) as Toatl_sale_39_ontario from dbo.FactInternetSales as fis
+inner Join
+dbo.DimGeography as g
+ON
+fis.SalesTerritoryKey=g.SalesTerritoryKey
+inner join 
+dbo.DimDate as dd
+ON
+dd.DateKey=fis.OrderDateKey
+where g.City like 'ont%' and dd.WeekNumberOfYear='39' and dd.CalendarYear='2012';
+
+--------------------------------------------------------
+select Sum(SalesAmount+TaxAmt+Freight)
+from FactInternetSales f
+join DimGeography dg on f.SalesTerritoryKey=dg.SalesTerritoryKey
+where dg.StateProvinceName='Ontario'
+and f.OrderDate between '2012-09-24' and '2012-10-01'
+
+But in AdventureWorks2022 database,
+
+select SUM(soh.TotalDue)as Total
+from Sales.SalesOrderHeader soh
+JOIN Person.StateProvince sp ON soh.TerritoryID = sp.TerritoryID
+where sp.Name = 'Ontario'
+and soh.OnlineOrderFlag = 1
+and soh.OrderDate between '2012-09-24' and '2012-10-01'
+----------------------------------------------------------------
+
+power BI
+===========
+Average 
+Measure = CALCULATE(AVERAGE(Employees[Salary (in euros)]),
+FILTER(Employees, Employees[Country ID] in {1, 2, 3})
+)
+
+--------------------
+
+Total_Revenu = CALCULATE(SUM(Sales[Revenue]),
+FILTER(Employees,
+Employees[ID]=13))      #emp id of the required entity
+-----------------------
