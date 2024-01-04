@@ -1,3 +1,11 @@
+emp with their boses:
+from "Employees" as e
+load e.ReportsTo as r
+select {
+    Emp_name: e.FirstName +" "+e.LastName
+    Supirior: r.FirstName+ " "+ r.LastName
+}
+---------------------------
 order and company names
 from "Orders" as o
 load o.Company as c
@@ -67,7 +75,7 @@ select {
     avg: mr.Total/mr.Quantity
 }
 ----------------------------------------------
-Anyone has queries for teams update and finding team will tallest players of MLB database in RavenDB.
+teams update and finding team will tallest players of MLB database in RavenDB.
 
 map:
 from m in docs.Mlbs
@@ -167,7 +175,38 @@ where sp.Name = 'Ontario'
 and soh.OnlineOrderFlag = 1
 and soh.OrderDate between '2012-09-24' and '2012-10-01'
 ----------------------------------------------------------------
+SELECT --Top 1
+pp. FirstName,pp.LastName,
+ROUND(SUM(soh.TotalDue), 2) AS TotalSales FROM Person.Person pp
+JOIN Sales.SalesOrderHeader soh ON soh.SalesPersonID = pp. BusinessEntityID
+GROUP BY pp.FirstName, pp.LastName
+ORDER BY TotalSales DESC;
+----------------------------------------------------------------
+WITH QuarterlySales AS (
+    SELECT
+        c.LastName,
+        YEAR(f.OrderDate) AS OrderYear,
+        SUM(f.SalesAmount) AS TotalSales
+    FROM
+        FactInternetSales f
+    JOIN
+        DimCustomer c ON f.CustomerKey = c.CustomerKey
+    WHERE
+        DATEPART(QUARTER, f.OrderDate) = 4
+    GROUP BY
+        c.LastName, YEAR(f.OrderDate)
+)
 
+SELECT TOP 1
+    LastName,
+    OrderYear,
+    TotalSales
+FROM
+    QuarterlySales
+ORDER BY
+    TotalSales DESC;
+
+------------------------------------------------------------------
 power BI
 ===========
 Average 
